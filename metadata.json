@@ -1,0 +1,6 @@
+{
+  "name": "Pomodoro Focus | 極簡質感番茄鐘",
+  "description": "沉浸式高效專注與時間管理工具，具備白噪音音景、任務番茄數追蹤、專注統計數據與自訂計時器",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
