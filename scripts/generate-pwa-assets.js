@@ -185,3 +185,4 @@ fs.writeFileSync(path.join(publicDir, 'icon-512.png'), drawTomatoPng(512));
 fs.writeFileSync(path.join(publicDir, 'apple-touch-icon.png'), drawTomatoPng(180));
 
 console.log('Successfully generated PWA icons in public/: icon.svg, icon-192.png, icon-512.png, apple-touch-icon.png');
+
