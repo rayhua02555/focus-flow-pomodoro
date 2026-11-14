@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Bell, Volume2, RotateCcw, Check, Sparkles, Palette } from 'lucide-react';
+import { X, Bell, Volume2, RotateCcw, Check, Sparkles, Palette, Smartphone } from 'lucide-react';
 import { AppSettings, DEFAULT_SETTINGS } from '../types';
 import { audioEngine } from '../utils/audioEngine';
 import { requestNotificationPermission } from '../utils/notifications';
@@ -10,6 +10,7 @@ interface SettingsModalProps {
   settings: AppSettings;
   onSaveSettings: (settings: AppSettings) => void;
   onOpenBackgroundModal?: () => void;
+  onOpenInstallPrompt?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -18,6 +19,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   settings,
   onSaveSettings,
   onOpenBackgroundModal,
+  onOpenInstallPrompt,
 }) => {
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [notificationStatus, setNotificationStatus] = useState<string>('');
@@ -372,6 +374,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               )}
             </div>
           </div>
+
+          {/* Section 6: Mobile & PWA App Installation */}
+          {onOpenInstallPrompt && (
+            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+                手機安裝 (PWA)
+              </h3>
+              <div className="flex items-center justify-between p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-850">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-500">
+                    <Smartphone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 block">
+                      安裝為手機獨立 App
+                    </span>
+                    <span className="text-[11px] text-neutral-400">
+                      全螢幕無網址列、支援完全離線運行
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenInstallPrompt();
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-medium hover:bg-rose-500 transition-colors"
+                >
+                  安裝教學
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modal Footer */}

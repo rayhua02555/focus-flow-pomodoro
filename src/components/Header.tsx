@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Maximize2, Settings, Sun, Moon, Palette } from 'lucide-react';
+import { Volume2, VolumeX, Maximize2, Settings, Sun, Moon, Palette, Smartphone } from 'lucide-react';
 import { AppSettings } from '../types';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   onUpdateSettings: (updater: (prev: AppSettings) => AppSettings) => void;
   onOpenSettings: () => void;
   onOpenBackgroundModal: () => void;
+  onOpenInstallPrompt?: () => void;
   onEnterZen: () => void;
   ambientPlaying: boolean;
   onToggleAmbient: () => void;
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   onUpdateSettings,
   onOpenSettings,
   onOpenBackgroundModal,
+  onOpenInstallPrompt,
   onEnterZen,
   ambientPlaying,
   onToggleAmbient,
@@ -163,6 +165,18 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-neutral-900" />
             )}
           </button>
+
+          {/* PWA Install Trigger Button */}
+          {onOpenInstallPrompt && (
+            <button
+              onClick={onOpenInstallPrompt}
+              title="安裝為手機 App (PWA)"
+              className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              aria-label="安裝 App"
+            >
+              <Smartphone className="h-4 w-4 text-rose-500" />
+            </button>
+          )}
 
           {/* Theme Toggle Button */}
           <button

@@ -27,6 +27,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { ZenOverlay } from './components/ZenOverlay';
 import { CustomTimeModal } from './components/CustomTimeModal';
 import { BackgroundModal } from './components/BackgroundModal';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { getBackgroundStyles } from './utils/backgroundPresets';
 import { screenWakeLock } from './utils/wakeLock';
 import { Timer, CheckSquare, BarChart2, BookOpen } from 'lucide-react';
@@ -43,6 +44,7 @@ export default function App() {
   const [isZenOpen, setIsZenOpen] = useState(false);
   const [isCustomTimeOpen, setIsCustomTimeOpen] = useState(false);
   const [isBackgroundModalOpen, setIsBackgroundModalOpen] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   // Timer core states
   const [mode, setMode] = useState<Mode>('focus');
@@ -485,7 +487,8 @@ export default function App() {
         !isZenOpen &&
         !isCustomTimeOpen &&
         !isSettingsOpen &&
-        !isBackgroundModalOpen
+        !isBackgroundModalOpen &&
+        !isInstallModalOpen
       ) {
         e.preventDefault();
         handleToggleTimer();
@@ -494,7 +497,14 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleToggleTimer, isZenOpen, isCustomTimeOpen, isSettingsOpen, isBackgroundModalOpen]);
+  }, [
+    handleToggleTimer,
+    isZenOpen,
+    isCustomTimeOpen,
+    isSettingsOpen,
+    isBackgroundModalOpen,
+    isInstallModalOpen,
+  ]);
 
   // Task actions
   const handleAddTask = (
@@ -569,6 +579,7 @@ export default function App() {
         onUpdateSettings={setSettings}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenBackgroundModal={() => setIsBackgroundModalOpen(true)}
+        onOpenInstallPrompt={() => setIsInstallModalOpen(true)}
         onEnterZen={() => setIsZenOpen(true)}
         ambientPlaying={ambientPlaying}
         onToggleAmbient={handleToggleAmbient}
@@ -706,6 +717,7 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onOpenBackgroundModal={() => setIsBackgroundModalOpen(true)}
+        onOpenInstallPrompt={() => setIsInstallModalOpen(true)}
         onSaveSettings={(newSettings) => {
           setSettings(newSettings);
           // If timer is idle, update duration immediately
@@ -730,6 +742,12 @@ export default function App() {
         onSaveBackground={(newBg) =>
           setSettings((prev) => ({ ...prev, background: newBg }))
         }
+      />
+
+      {/* PWA Mobile Installation Prompt & Guide */}
+      <PwaInstallPrompt
+        forceOpen={isInstallModalOpen}
+        onCloseForceOpen={() => setIsInstallModalOpen(false)}
       />
 
       {/* Fullscreen Zen Overlay */}
