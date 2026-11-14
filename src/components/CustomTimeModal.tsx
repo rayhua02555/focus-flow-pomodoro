@@ -79,6 +79,8 @@ export const CustomTimeModal: React.FC<CustomTimeModalProps> = ({
               <div className="flex items-center">
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="0"
                   max="180"
                   value={minutes}
@@ -95,6 +97,8 @@ export const CustomTimeModal: React.FC<CustomTimeModalProps> = ({
               <div className="flex items-center">
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="0"
                   max="59"
                   value={seconds}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Bell, Volume2, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { X, Bell, Volume2, RotateCcw, Check, Sparkles, Palette } from 'lucide-react';
 import { AppSettings, DEFAULT_SETTINGS } from '../types';
 import { audioEngine } from '../utils/audioEngine';
 import { requestNotificationPermission } from '../utils/notifications';
@@ -9,6 +9,7 @@ interface SettingsModalProps {
   onClose: () => void;
   settings: AppSettings;
   onSaveSettings: (settings: AppSettings) => void;
+  onOpenBackgroundModal?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -16,6 +17,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   settings,
   onSaveSettings,
+  onOpenBackgroundModal,
 }) => {
   const [draft, setDraft] = useState<AppSettings>(settings);
   const [notificationStatus, setNotificationStatus] = useState<string>('');
@@ -94,6 +96,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </label>
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
                   max="180"
                   value={draft.focusDuration}
@@ -111,6 +115,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </label>
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
                   max="60"
                   value={draft.shortBreakDuration}
@@ -128,6 +134,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </label>
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
                   max="90"
                   value={draft.longBreakDuration}
@@ -145,6 +153,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="flex items-center gap-2">
                 <input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="2"
                   max="12"
                   value={draft.longBreakInterval}
@@ -327,6 +337,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {notificationStatus && (
               <p className="text-[11px] text-rose-500 mt-1.5">{notificationStatus}</p>
             )}
+          </div>
+
+          {/* Section 5: Appearance & Background */}
+          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+            <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+              外觀與背景風格
+            </h3>
+            <div className="flex items-center justify-between p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-850">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500">
+                  <Palette className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 block">
+                    背景桌布與氛圍微調
+                  </span>
+                  <span className="text-[11px] text-neutral-400">
+                    目前風格: {draft.background?.type === 'default' ? '極簡原生' : draft.background?.presetId}
+                  </span>
+                </div>
+              </div>
+              {onOpenBackgroundModal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenBackgroundModal();
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-xs font-medium hover:opacity-90 transition-opacity"
+                >
+                  自訂背景
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

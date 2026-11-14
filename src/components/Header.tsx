@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Maximize2, Settings, Sun, Moon, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Maximize2, Settings, Sun, Moon, Palette } from 'lucide-react';
 import { AppSettings } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   settings: AppSettings;
   onUpdateSettings: (updater: (prev: AppSettings) => AppSettings) => void;
   onOpenSettings: () => void;
+  onOpenBackgroundModal: () => void;
   onEnterZen: () => void;
   ambientPlaying: boolean;
   onToggleAmbient: () => void;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   settings,
   onUpdateSettings,
   onOpenSettings,
+  onOpenBackgroundModal,
   onEnterZen,
   ambientPlaying,
   onToggleAmbient,
@@ -35,13 +37,13 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-neutral-200/80 bg-white/90 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-950/90 transition-colors">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-30 w-full border-b border-neutral-200/80 bg-white/90 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-950/90 transition-colors pt-[env(safe-area-inset-top,0px)]">
+      <div className="mx-auto flex h-14 sm:h-16 max-w-6xl items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6">
         {/* Zone 1: Wordmark */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-600 to-rose-500 shadow-sm shadow-rose-500/20 text-white">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-600 to-rose-500 shadow-sm shadow-rose-500/20 text-white shrink-0">
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4 sm:h-5 sm:w-5"
               viewBox="0 0 24 24"
               fill="currentColor"
               stroke="none"
@@ -55,14 +57,14 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveView('timer')}
             className="text-left group cursor-pointer"
           >
-            <span className="text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-50 group-hover:text-rose-500 transition-colors">
-              Pomodoro Focus
+            <span className="text-sm sm:text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-50 group-hover:text-rose-500 transition-colors">
+              Pomodoro<span className="hidden sm:inline"> Focus</span>
             </span>
           </button>
         </div>
 
-        {/* Zone 2: Navigation Links */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        {/* Zone 2: Navigation Links (Desktop only; mobile uses bottom navigation bar) */}
+        <nav className="hidden md:flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => setActiveView('timer')}
             className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
@@ -106,12 +108,12 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Zone 3: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {/* Ambient Sound Trigger */}
           <button
             onClick={onToggleAmbient}
             title={ambientPlaying ? `白噪音播放中: ${settings.ambientSound}` : '開啟專注白噪音'}
-            className={`relative flex h-9 w-9 items-center justify-center rounded-lg border transition-all ${
+            className={`relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border transition-all ${
               ambientPlaying
                 ? 'border-rose-400/50 bg-rose-50 text-rose-600 dark:border-rose-500/40 dark:bg-rose-950/40 dark:text-rose-400'
                 : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100'
@@ -135,17 +137,38 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onEnterZen}
             title="進入全螢幕沉浸模式 (Zen)"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
+            className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
             aria-label="全螢幕專注"
           >
             <Maximize2 className="h-4 w-4" />
+          </button>
+
+          {/* Background Customization Button */}
+          <button
+            onClick={onOpenBackgroundModal}
+            title={
+              settings.background?.type !== 'default'
+                ? `目前背景: ${settings.background.presetId}`
+                : '自訂背景與視覺風格'
+            }
+            className={`relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border transition-all ${
+              settings.background?.type !== 'default'
+                ? 'border-indigo-400/50 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-950/40 dark:text-indigo-400'
+                : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100'
+            }`}
+            aria-label="背景自訂"
+          >
+            <Palette className="h-4 w-4" />
+            {settings.background?.type !== 'default' && (
+              <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-neutral-900" />
+            )}
           </button>
 
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
             title={settings.theme === 'dark' ? '切換為明亮模式' : '切換為暗黑模式'}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
+            className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
             aria-label="切換主題"
           >
             {settings.theme === 'dark' ? (
@@ -159,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenSettings}
             title="計時器與音效設定"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
+            className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 transition-colors"
             aria-label="設定"
           >
             <Settings className="h-4 w-4" />

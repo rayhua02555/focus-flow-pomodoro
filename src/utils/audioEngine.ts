@@ -22,6 +22,24 @@ class AudioEngine {
     return this.ctx;
   }
 
+  // Pre-unlock Web Audio channel on mobile (iOS Safari / Android) upon first user interaction
+  unlockMobileAudio() {
+    try {
+      const ctx = this.getContext();
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      // Play a tiny silent buffer to warm up the audio hardware
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+    } catch {
+      // ignore
+    }
+  }
+
   // Play alarm sound when timer ends
   playAlarm(tone: 'bell' | 'marimba' | 'beep' | 'crystal', volumePercent: number = 75) {
     try {

@@ -26,6 +26,9 @@ import { PomodoroGuide } from './components/PomodoroGuide';
 import { SettingsModal } from './components/SettingsModal';
 import { ZenOverlay } from './components/ZenOverlay';
 import { CustomTimeModal } from './components/CustomTimeModal';
+import { BackgroundModal } from './components/BackgroundModal';
+import { getBackgroundStyles } from './utils/backgroundPresets';
+import { screenWakeLock } from './utils/wakeLock';
 import { Timer, CheckSquare, BarChart2, BookOpen } from 'lucide-react';
 
 export default function App() {
@@ -39,6 +42,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isZenOpen, setIsZenOpen] = useState(false);
   const [isCustomTimeOpen, setIsCustomTimeOpen] = useState(false);
+  const [isBackgroundModalOpen, setIsBackgroundModalOpen] = useState(false);
 
   // Timer core states
   const [mode, setMode] = useState<Mode>('focus');
@@ -288,6 +292,58 @@ export default function App() {
     return () => clearInterval(intervalId);
   }, [timerState, timeLeft, settings.tickSound, settings.soundVolume, handleSessionComplete]);
 
+  // Pre-unlock mobile Web Audio channel upon first user touch/tap
+  useEffect(() => {
+    const handleFirstTouch = () => {
+      audioEngine.unlockMobileAudio();
+      window.removeEventListener('touchstart', handleFirstTouch);
+      window.removeEventListener('click', handleFirstTouch);
+    };
+    window.addEventListener('touchstart', handleFirstTouch, { passive: true });
+    window.addEventListener('click', handleFirstTouch, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', handleFirstTouch);
+      window.removeEventListener('click', handleFirstTouch);
+    };
+  }, []);
+
+  // Screen Wake Lock on mobile devices during active focus session
+  useEffect(() => {
+    if (timerState === 'running') {
+      screenWakeLock.request();
+    } else {
+      screenWakeLock.release();
+    }
+    return () => {
+      screenWakeLock.release();
+    };
+  }, [timerState]);
+
+  // Page Visibility API listener for mobile background wake-up and tab switching
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      screenWakeLock.onVisibilityChange();
+
+      if (
+        document.visibilityState === 'visible' &&
+        timerState === 'running' &&
+        targetEndTimeRef.current
+      ) {
+        const remainingMs = targetEndTimeRef.current - Date.now();
+        if (remainingMs <= 0) {
+          targetEndTimeRef.current = null;
+          setTimeLeft(0);
+          handleSessionComplete();
+        } else {
+          setTimeLeft(Math.max(0, Math.ceil(remainingMs / 1000)));
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [timerState, handleSessionComplete]);
+
   // Toggle timer action
   const handleToggleTimer = useCallback(() => {
     if (timerState === 'running') {
@@ -424,7 +480,13 @@ export default function App() {
         return;
       }
 
-      if (e.code === 'Space' && !isZenOpen && !isCustomTimeOpen && !isSettingsOpen) {
+      if (
+        e.code === 'Space' &&
+        !isZenOpen &&
+        !isCustomTimeOpen &&
+        !isSettingsOpen &&
+        !isBackgroundModalOpen
+      ) {
         e.preventDefault();
         handleToggleTimer();
       }
@@ -432,7 +494,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleToggleTimer, isZenOpen, isCustomTimeOpen, isSettingsOpen]);
+  }, [handleToggleTimer, isZenOpen, isCustomTimeOpen, isSettingsOpen, isBackgroundModalOpen]);
 
   // Task actions
   const handleAddTask = (
@@ -475,9 +537,30 @@ export default function App() {
   };
 
   const activeTask = tasks.find((t) => t.id === activeTaskId);
+  const bgStyles = getBackgroundStyles(settings.background);
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 flex flex-col transition-colors pb-16 md:pb-0">
+    <div
+      className={`relative min-h-screen text-neutral-900 dark:text-neutral-100 flex flex-col transition-colors pb-24 md:pb-6 overflow-x-hidden ${
+        !bgStyles.hasCustomBackground ? 'bg-neutral-50 dark:bg-neutral-950' : 'bg-neutral-950'
+      }`}
+    >
+      {/* Dynamic Background Image / Gradient Layer */}
+      {bgStyles.hasCustomBackground && (
+        <div
+          className="fixed inset-0 z-0 pointer-events-none transition-all duration-500"
+          style={bgStyles.wrapperStyle}
+        />
+      )}
+
+      {/* Dynamic Contrast / Dimming Overlay */}
+      {bgStyles.hasCustomBackground && (
+        <div
+          className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300"
+          style={bgStyles.overlayStyle}
+        />
+      )}
+
       {/* Top Header */}
       <Header
         activeView={activeView}
@@ -485,6 +568,7 @@ export default function App() {
         settings={settings}
         onUpdateSettings={setSettings}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenBackgroundModal={() => setIsBackgroundModalOpen(true)}
         onEnterZen={() => setIsZenOpen(true)}
         ambientPlaying={ambientPlaying}
         onToggleAmbient={handleToggleAmbient}
@@ -492,7 +576,7 @@ export default function App() {
       />
 
       {/* Main Viewport Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="relative z-10 flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {activeView === 'timer' && (
           <div className="space-y-8">
             <TimerCircle
@@ -554,8 +638,8 @@ export default function App() {
         {activeView === 'guide' && <PomodoroGuide />}
       </main>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800">
+      {/* Mobile Bottom Navigation Bar with iOS safe-area support */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 pb-[env(safe-area-inset-bottom,0px)]">
         <div className="grid grid-cols-4 items-center h-16 max-w-lg mx-auto px-2">
           <button
             onClick={() => setActiveView('timer')}
@@ -621,6 +705,7 @@ export default function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
+        onOpenBackgroundModal={() => setIsBackgroundModalOpen(true)}
         onSaveSettings={(newSettings) => {
           setSettings(newSettings);
           // If timer is idle, update duration immediately
@@ -635,6 +720,16 @@ export default function App() {
             setTotalTime(nextDur);
           }
         }}
+      />
+
+      {/* Background Customization Modal */}
+      <BackgroundModal
+        isOpen={isBackgroundModalOpen}
+        onClose={() => setIsBackgroundModalOpen(false)}
+        background={settings.background}
+        onSaveBackground={(newBg) =>
+          setSettings((prev) => ({ ...prev, background: newBg }))
+        }
       />
 
       {/* Fullscreen Zen Overlay */}

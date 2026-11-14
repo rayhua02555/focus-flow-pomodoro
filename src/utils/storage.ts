@@ -12,12 +12,17 @@ export function getStoredSettings(): AppSettings {
     const focusSecs = parsed.focusSeconds ?? (parsed.focusDuration ? parsed.focusDuration * 60 : 25 * 60);
     const shortSecs = parsed.shortBreakSeconds ?? (parsed.shortBreakDuration ? parsed.shortBreakDuration * 60 : 5 * 60);
     const longSecs = parsed.longBreakSeconds ?? (parsed.longBreakDuration ? parsed.longBreakDuration * 60 : 15 * 60);
+    const background = parsed.background
+      ? { ...DEFAULT_SETTINGS.background, ...parsed.background }
+      : DEFAULT_SETTINGS.background;
+
     return {
       ...DEFAULT_SETTINGS,
       ...parsed,
       focusSeconds: focusSecs,
       shortBreakSeconds: shortSecs,
       longBreakSeconds: longSecs,
+      background,
     };
   } catch {
     return DEFAULT_SETTINGS;

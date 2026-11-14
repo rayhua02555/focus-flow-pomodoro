@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Minimize2, Play, Pause, RotateCcw, SkipForward, Volume2, VolumeX, Plus, Minus } from 'lucide-react';
 import { AppSettings, Mode, Task, TimerState } from '../types';
+import { getBackgroundStyles } from '../utils/backgroundPresets';
 
 interface ZenOverlayProps {
   isOpen: boolean;
@@ -68,11 +69,31 @@ export const ZenOverlay: React.FC<ZenOverlayProps> = ({
       ? 'bg-emerald-500/10'
       : 'bg-indigo-500/10';
 
+  const bgStyles = settings.background?.applyToZen
+    ? getBackgroundStyles(settings.background)
+    : { wrapperStyle: {}, overlayStyle: { display: 'none' }, hasCustomBackground: false };
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-between bg-neutral-950 p-6 sm:p-12 text-neutral-100 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 flex flex-col justify-between bg-neutral-950 p-5 sm:p-12 text-neutral-100 animate-in fade-in duration-300 overflow-hidden pt-[calc(1.25rem+env(safe-area-inset-top,0px))] pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
+      {/* Custom Background Layer */}
+      {bgStyles.hasCustomBackground && (
+        <div
+          className="pointer-events-none absolute inset-0 z-0 transition-all duration-500"
+          style={bgStyles.wrapperStyle}
+        />
+      )}
+
+      {/* Dimming / Contrast Overlay */}
+      {bgStyles.hasCustomBackground && (
+        <div
+          className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300"
+          style={bgStyles.overlayStyle}
+        />
+      )}
+
       {/* Background ambient subtle breathing pulse */}
       <div
-        className={`pointer-events-none absolute inset-0 transition-opacity duration-1000 ${
+        className={`pointer-events-none absolute inset-0 z-0 transition-opacity duration-1000 ${
           timerState === 'running' ? 'opacity-100 animate-pulse' : 'opacity-40'
         } ${modeBgGlow}`}
       />
@@ -88,15 +109,15 @@ export const ZenOverlay: React.FC<ZenOverlayProps> = ({
 
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900/80 px-3.5 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900/80 px-3.5 py-1.5 text-xs text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
         >
           <Minimize2 className="h-3.5 w-3.5" />
-          <span>退出沉浸 (Esc)</span>
+          <span>退出<span className="hidden sm:inline">沉浸 (Esc)</span></span>
         </button>
       </div>
 
       {/* Center Main Stage */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto w-full px-2">
         {/* Mode Label */}
         <div className="mb-4 flex items-center gap-2 text-sm sm:text-base font-medium tracking-wide">
           <span className={modeColor}>
@@ -105,15 +126,15 @@ export const ZenOverlay: React.FC<ZenOverlayProps> = ({
           {activeTask && (
             <>
               <span className="text-neutral-600">·</span>
-              <span className="text-neutral-300 truncate max-w-xs sm:max-w-md">
+              <span className="text-neutral-300 truncate max-w-[200px] xs:max-w-xs sm:max-w-md">
                 {activeTask.title}
               </span>
             </>
           )}
         </div>
 
-        {/* Huge Monospace Digital Timer */}
-        <div className="font-mono-numbers text-8xl sm:text-9xl md:text-[11rem] font-bold tracking-tighter text-neutral-50 select-none">
+        {/* Huge Monospace Digital Timer (scaled responsively for mobile screens) */}
+        <div className="font-mono-numbers text-6xl xs:text-7xl sm:text-9xl md:text-[11rem] font-bold tracking-tighter text-neutral-50 select-none">
           {timeFormatted}
         </div>
 

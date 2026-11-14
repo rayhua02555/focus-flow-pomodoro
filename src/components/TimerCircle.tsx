@@ -176,7 +176,7 @@ export const TimerCircle: React.FC<TimerCircleProps> = ({
       <div className="relative flex items-center justify-center">
         {/* Subtle breathing glow ring when running */}
         <div
-          className={`absolute h-[290px] w-[290px] sm:h-[330px] sm:w-[330px] rounded-full transition-all duration-1000 ${
+          className={`absolute w-[min(290px,76vw)] h-[min(290px,76vw)] sm:h-[330px] sm:w-[330px] rounded-full transition-all duration-1000 ${
             timerState === 'running'
               ? 'ring-8 ring-offset-4 ring-offset-transparent animate-pulse ' + theme.pulse
               : 'opacity-0'
@@ -184,7 +184,7 @@ export const TimerCircle: React.FC<TimerCircleProps> = ({
         />
 
         <svg
-          className="h-[290px] w-[290px] sm:h-[330px] sm:w-[330px] -rotate-90 transform"
+          className="w-[min(290px,76vw)] h-[min(290px,76vw)] sm:h-[330px] sm:w-[330px] -rotate-90 transform"
           viewBox={`0 0 ${size} ${size}`}
         >
           <defs>

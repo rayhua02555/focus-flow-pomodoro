@@ -23,6 +23,26 @@ export interface FocusSession {
   taskTitle?: string;
 }
 
+export type BackgroundType = 'default' | 'gradient' | 'wallpaper' | 'custom';
+
+export interface BackgroundConfig {
+  type: BackgroundType;
+  presetId: string;
+  customUrl?: string;
+  blur: number; // 0 - 24 px
+  opacity: number; // 10 - 90 %
+  applyToZen: boolean;
+}
+
+export const DEFAULT_BACKGROUND: BackgroundConfig = {
+  type: 'default',
+  presetId: 'default',
+  customUrl: '',
+  blur: 0,
+  opacity: 35,
+  applyToZen: true,
+};
+
 export interface AppSettings {
   focusDuration: number; // minutes for UI display
   shortBreakDuration: number; // minutes for UI display
@@ -40,6 +60,7 @@ export interface AppSettings {
   ambientVolume: number; // 0-100
   desktopNotifications: boolean;
   theme: 'dark' | 'light';
+  background: BackgroundConfig;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -59,4 +80,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ambientVolume: 50,
   desktopNotifications: false,
   theme: 'dark',
+  background: DEFAULT_BACKGROUND,
 };
